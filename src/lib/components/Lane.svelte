@@ -1,17 +1,30 @@
 <script>
     import IssueCard from './IssueCard.svelte';
     import { issues } from '$lib/stores/stores';
-  
+    
     export let name;
   
-    // Filter die Issues, die in dieser Lane sind
+    // Alle Issues, die in dieser Lane sind
     $: laneIssues = $issues.filter(i => i.lane === name);
   
-    // Summe der Story Points in dieser Lane
+    // Summe Story Points pro Lane
     $: totalSP = laneIssues.reduce((sum, i) => sum + Number(i.storyPoints), 0);
+  
+    // Drag & Drop Events
+    function allowDrop(event) {
+      event.preventDefault();
+    }
+  
+    function drop(event) {
+      const id = Number(event.dataTransfer.getData('text'));
+      issues.move(id, name);
+    }
   </script>
   
-  <div class="bg-purple-50 rounded p-3 min-h-[200px] flex flex-col">
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div class="bg-purple-50 rounded p-3 min-h-[200px] flex flex-col"
+       on:dragover={allowDrop}
+       on:drop={drop}>
     <h2 class="font-bold text-purple-700 mb-1 text-center">{name}</h2>
     <p class="text-sm text-gray-600 text-center mb-2">Total SP: {totalSP}</p>
     
