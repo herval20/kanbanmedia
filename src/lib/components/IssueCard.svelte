@@ -20,8 +20,7 @@
     <div class="flex justify-between items-center mt-3 text-sm text-gray-600">
       <span>Due: {issue.dueDate}</span>
       <span>SP: {issue.storyPoints}</span>
-      <span
-        class="px-2 py-0.5 rounded-full text-white"
+      <span class="px-2 py-0.5 rounded-full text-white"
         class:bg-green-500={issue.priority === 'Low'}
         class:bg-yellow-500={issue.priority === 'Medium'}
         class:bg-red-500={issue.priority === 'High'}
