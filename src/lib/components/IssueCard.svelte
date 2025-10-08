@@ -21,6 +21,7 @@
     }
   </script>
   
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div class="bg-white rounded-xl shadow p-4 mb-3 border-l-4"
        class:border-l-red-500={overdue}
        class:border-l-purple-500={!overdue}

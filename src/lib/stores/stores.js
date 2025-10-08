@@ -1,30 +1,51 @@
-// src/lib/stores/stores.js
 import { writable } from 'svelte/store';
+export const lanes = ['To Do', 'Doing', 'Done', 'Archiv'];
 
-// Lanes definieren
-export const lanes = ['Do', 'Doing', 'Done', 'Archiv'];
 
-// Svelte Store für Issues
-function createIssueStore() {
-  const { subscribe, set, update } = writable([]);
+function loadFromLocalStorage() {
+  if (typeof localStorage === 'undefined') return [];
+  try {
+    return JSON.parse(localStorage.getItem('issues')) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveToLocalStorage(data) {
+  if (typeof localStorage === 'undefined') return;
+  localStorage.setItem('issues', JSON.stringify(data));
+}
+
+function createIssuesStore() {
+  const { subscribe, set, update } = writable(loadFromLocalStorage());
 
   return {
     subscribe,
-    add(issue) {
-      update(items => [...items, issue]);
+    add: (issue) =>
+      update((all) => {
+        const newIssues = [...all, issue];
+        saveToLocalStorage(newIssues);
+        return newIssues;
+      }),
+    move: (id, newLane) =>
+      update((all) => {
+        const updated = all.map((i) =>
+          i.id === id ? { ...i, lane: newLane } : i
+        );
+        saveToLocalStorage(updated);
+        return updated;
+      }),
+    remove: (id) =>
+      update((all) => {
+        const filtered = all.filter((i) => i.id !== id);
+        saveToLocalStorage(filtered);
+        return filtered;
+      }),
+    set: (data) => {
+      saveToLocalStorage(data);
+      set(data);
     },
-    move(id, newLane) {
-      update(items =>
-        items.map(i => (i.id === id ? { ...i, lane: newLane } : i))
-      );
-    },
-    remove(id) {
-      update(items => items.filter(i => i.id !== id));
-    },
-    clear() {
-      set([]);
-    }
   };
 }
 
-export const issues = createIssueStore();
+export const issues = createIssuesStore();
