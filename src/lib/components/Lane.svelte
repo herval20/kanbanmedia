@@ -1,14 +1,10 @@
-<!-- src/lib/components/Lane.svelte -->
 <script>
     import IssueCard from './IssueCard.svelte';
-    import { issues } from '$lib/stores';
+    import { issues } from '$lib/stores/stores';
   
     export let name;
   
-    // Filter die Issues, die in dieser Lane sind
     $: laneIssues = $issues.filter(i => i.lane === name);
-  
-    // Summe der Story Points in dieser Lane
     $: totalSP = laneIssues.reduce((sum, i) => sum + Number(i.storyPoints), 0);
   </script>
   
