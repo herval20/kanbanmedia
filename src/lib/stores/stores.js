@@ -1,51 +1,68 @@
 import { writable } from 'svelte/store';
-export const lanes = ['To Do', 'Doing', 'Done', 'Archiv'];
 
+// Lanes
+export const lanes = ['Do', 'Doing', 'Done', 'Archiv'];
 
-function loadFromLocalStorage() {
+// Issues Store
+function loadFromStorage() {
   if (typeof localStorage === 'undefined') return [];
-  try {
-    return JSON.parse(localStorage.getItem('issues')) || [];
-  } catch {
-    return [];
+  const data = localStorage.getItem('issues');
+  return data ? JSON.parse(data) : [];
+}
+
+function saveToStorage(issues) {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('issues', JSON.stringify(issues));
   }
 }
 
-function saveToLocalStorage(data) {
-  if (typeof localStorage === 'undefined') return;
-  localStorage.setItem('issues', JSON.stringify(data));
-}
-
 function createIssuesStore() {
-  const { subscribe, set, update } = writable(loadFromLocalStorage());
+  const { subscribe, set, update } = writable(loadFromStorage());
 
   return {
     subscribe,
     add: (issue) =>
       update((all) => {
-        const newIssues = [...all, issue];
-        saveToLocalStorage(newIssues);
-        return newIssues;
-      }),
-    move: (id, newLane) =>
-      update((all) => {
-        const updated = all.map((i) =>
-          i.id === id ? { ...i, lane: newLane } : i
-        );
-        saveToLocalStorage(updated);
-        return updated;
+        const newList = [...all, issue];
+        saveToStorage(newList);
+        return newList;
       }),
     remove: (id) =>
       update((all) => {
-        const filtered = all.filter((i) => i.id !== id);
-        saveToLocalStorage(filtered);
-        return filtered;
+        const newList = all.filter((i) => i.id !== id);
+        saveToStorage(newList);
+        return newList;
       }),
-    set: (data) => {
-      saveToLocalStorage(data);
-      set(data);
-    },
+    move: (id, newLane) =>
+      update((all) => {
+        const updated = all.map((i) => {
+          if (i.id === id) {
+            if (newLane === 'Done' && i.lane !== 'Done') {
+              showNotification(`Issue "${i.title}" wurde abgeschlossen ✅`);
+            }
+            return { ...i, lane: newLane };
+          }
+          return i;
+        });
+        saveToStorage(updated);
+        return updated;
+      }),
+    reset: () => set([])
   };
+}
+
+function showNotification(message) {
+  if (typeof window !== 'undefined' && 'Notification' in window) {
+    if (Notification.permission === 'granted') {
+      new Notification('Kanban Board', { body: message });
+    } else if (Notification.permission !== 'denied') {
+      Notification.requestPermission().then((permission) => {
+        if (permission === 'granted') {
+          new Notification('Kanban Board', { body: message });
+        }
+      });
+    }
+  }
 }
 
 export const issues = createIssuesStore();
