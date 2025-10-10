@@ -13,7 +13,7 @@
     let dueDate = '';
   
     function addIssue() {
-      if (!title) return;
+      if (!title || !dueDate) return; // title and due date required
   
       const newIssue = {
         id: Date.now(),
@@ -49,10 +49,10 @@
   {#if open}
   <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
     <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-      <h2 class="text-xl font-bold mb-4">Neues Issue erstellen</h2>
+      <h2 class="text-xl font-bold mb-4">New Issue</h2>
   
-      <input type="text" placeholder="Titel" bind:value={title} class="w-full p-2 border rounded mb-2"/>
-      <textarea placeholder="Beschreibung" bind:value={description} class="w-full p-2 border rounded mb-2"></textarea>
+      <input type="text" placeholder="Title" bind:value={title} class="w-full p-2 border rounded mb-2"/>
+      <textarea placeholder="Description" bind:value={description} class="w-full p-2 border rounded mb-2"></textarea>
   
       <div class="flex gap-2 mb-2">
         <input type="number" min="1" max="10" bind:value={storyPoints} class="w-20 p-2 border rounded" placeholder="SP"/>
@@ -71,8 +71,8 @@
       </div>
   
       <div class="flex justify-end gap-2 mt-4">
-        <button class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400" on:click={closeDialog}>Abbrechen</button>
-        <button class="px-4 py-2 rounded bg-purple-600 text-white hover:bg-purple-700" on:click={addIssue}>Hinzufügen</button>
+        <button class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400" on:click={closeDialog}>Cancel</button>
+        <button class="px-4 py-2 rounded bg-purple-600 text-white hover:bg-purple-700" on:click={addIssue}>Add</button>
       </div>
     </div>
   </div>

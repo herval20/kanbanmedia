@@ -3,7 +3,7 @@ import { writable } from 'svelte/store';
 // Lanes
 export const lanes = ['Do', 'Doing', 'Done', 'Archiv'];
 
-// Load & Save Helpers
+// LocalStorage helpers
 function loadFromStorage() {
   if (typeof localStorage === 'undefined') return [];
   const data = localStorage.getItem('issues');
@@ -16,34 +16,31 @@ function saveToStorage(issues) {
   }
 }
 
-// Store Creation
+// Issues Store
 function createIssuesStore() {
   const { subscribe, set, update } = writable(loadFromStorage());
 
   return {
     subscribe,
-
     add: (issue) =>
       update((all) => {
-        const newIssue = { ...issue, x: issue.x || 100, y: issue.y || 100 };
-        const newList = [...all, newIssue];
+        const newList = [...all, issue];
         saveToStorage(newList);
         return newList;
       }),
-
     remove: (id) =>
       update((all) => {
         const newList = all.filter((i) => i.id !== id);
         saveToStorage(newList);
         return newList;
       }),
-
     move: (id, newLane) =>
       update((all) => {
         const updated = all.map((i) => {
           if (i.id === id) {
+            // ✅ Notification for Done
             if (newLane === 'Done' && i.lane !== 'Done') {
-              showNotification(`Issue "${i.title}" wurde abgeschlossen ✅`);
+              showNotification(`Issue "${i.title}" has been completed ✅`);
             }
             return { ...i, lane: newLane };
           }
@@ -52,20 +49,11 @@ function createIssuesStore() {
         saveToStorage(updated);
         return updated;
       }),
-
-    // ✅ NEW: update position of issue on drag
-    updatePosition: (id, x, y) =>
-      update((all) => {
-        const updated = all.map((i) => (i.id === id ? { ...i, x, y } : i));
-        saveToStorage(updated);
-        return updated;
-      }),
-
     reset: () => set([])
   };
 }
 
-// Desktop Notification for "Done"
+// Notifications
 function showNotification(message) {
   if (typeof window !== 'undefined' && 'Notification' in window) {
     if (Notification.permission === 'granted') {
