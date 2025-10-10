@@ -22,11 +22,13 @@ function createIssuesStore() {
   return {
     subscribe,
     add: (issue) =>
-      update((all) => {
-        const newList = [...all, issue];
-        saveToStorage(newList);
-        return newList;
-      }),
+    update((all) => {
+      const newIssue = { ...issue, x: issue.x || 100, y: issue.y || 100 };
+      const newList = [...all, newIssue];
+      saveToStorage(newList);
+      return newList;
+    }),
+  
     remove: (id) =>
       update((all) => {
         const newList = all.filter((i) => i.id !== id);
