@@ -15,13 +15,11 @@
         const data = await res.json();
         userCountry = data.country_name || '';
       } catch (err) {
-        console.warn('ipapi.co failed, trying fallback API', err);
         try {
           const res2 = await fetch('https://ipwho.is/');
           const data2 = await res2.json();
           userCountry = data2.country || '';
-        } catch (err2) {
-          console.error('All Geo APIs failed', err2);
+        } catch {
           userCountry = 'Unknown';
         }
       }
@@ -47,7 +45,7 @@
       const allIssues = $issues;
       if (!allIssues.length) return;
   
-      const headers = ['Title', 'Description', 'CreationDate', 'DueDate', 'StoryPoints', 'Priority', 'Lane'];
+      const headers = ['Title','Description','CreationDate','DueDate','StoryPoints','Priority','Lane'];
       const rows = allIssues.map(i => [
         `"${i.title}"`,
         `"${i.description}"`,
@@ -89,6 +87,9 @@
         on:drop={() => onDrop(lane)}
       >
         <h2 class="text-lg font-semibold text-gray-700 mb-3 text-center">{lane}</h2>
+        <p class="text-sm text-gray-500 text-center">
+          Total SP: {$issues.filter(i => i.lane === lane).reduce((sum, i) => sum + Number(i.storyPoints || 0), 0)}
+        </p>
   
         {#each $issues.filter(i => i.lane === lane) as issue (issue.id)}
           <div
