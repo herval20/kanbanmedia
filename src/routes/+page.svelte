@@ -41,13 +41,40 @@
     function onDragOver(event) {
       event.preventDefault();
     }
+  
+    // CSV export for all issues
+    function exportCSV() {
+      const allIssues = $issues;
+      if (!allIssues.length) return;
+  
+      const headers = ['Title', 'Description', 'CreationDate', 'DueDate', 'StoryPoints', 'Priority', 'Lane'];
+      const rows = allIssues.map(i => [
+        `"${i.title}"`,
+        `"${i.description}"`,
+        `"${i.creationDate}"`,
+        `"${i.dueDate}"`,
+        i.storyPoints,
+        i.priority,
+        i.lane
+      ].join(','));
+  
+      const csvContent = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `kanban_issues.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   </script>
   
   <header class="flex justify-between items-center p-4 bg-purple-100 rounded-b-lg">
     <h1 class="text-xl font-bold">Kanban Board</h1>
-    <div>
-      <span class="mr-4">Your Country: {userCountry}</span>
+    <div class="flex items-center gap-3">
+      <span>Your Country: {userCountry}</span>
       <button class="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700" on:click={() => showDialog = true}>New Issue</button>
+      <button class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700" on:click={exportCSV}>Export CSV</button>
     </div>
   </header>
   
@@ -55,8 +82,8 @@
   
   <div class="flex gap-4 p-6 h-screen bg-gray-50 overflow-x-auto">
     {#each lanes as lane}
-      <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
+        role="list"
         class="flex-1 bg-white rounded-2xl shadow p-4 flex flex-col"
         on:dragover={onDragOver}
         on:drop={() => onDrop(lane)}
@@ -65,6 +92,7 @@
   
         {#each $issues.filter(i => i.lane === lane) as issue (issue.id)}
           <div
+            role="listitem"
             draggable="true"
             on:dragstart={() => onDragStart(issue)}
             class="mb-3"
