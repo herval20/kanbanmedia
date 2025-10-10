@@ -3,13 +3,16 @@
     import { format, parseISO, isPast } from 'date-fns';
     export let issue;
   
+    // --- Position and drag state ---
     let pos = { x: issue.x || 100, y: issue.y || 100 };
     let isDragging = false;
     let offset = { x: 0, y: 0 };
   
+    // --- Date formatting and overdue check ---
     $: dueFormatted = issue.dueDate ? format(parseISO(issue.dueDate), 'dd.MM.yyyy') : '';
     $: overdue = issue.dueDate ? isPast(parseISO(issue.dueDate)) : false;
   
+    // --- Drag logic ---
     function startDrag(e) {
       isDragging = true;
       offset = { x: e.clientX - pos.x, y: e.clientY - pos.y };
@@ -25,6 +28,7 @@
       issues.updatePosition(issue.id, pos.x, pos.y);
     }
   
+    // --- Delete issue ---
     function deleteIssue() {
       issues.remove(issue.id);
     }
@@ -53,7 +57,13 @@
     </div>
   
     {#if overdue}
-      <div class="mt-2 text-red-600 font-semibold">⚠ Überfällig!</div>
+      <div class="mt-2 text-red-600 font-semibold">⚠ Overdue!</div>
     {/if}
   </div>
+  
+  <style>
+    .absolute {
+      position: absolute;
+    }
+  </style>
   

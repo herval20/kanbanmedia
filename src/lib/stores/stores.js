@@ -3,7 +3,7 @@ import { writable } from 'svelte/store';
 // Lanes
 export const lanes = ['Do', 'Doing', 'Done', 'Archiv'];
 
-// Issues Store
+// Load & Save Helpers
 function loadFromStorage() {
   if (typeof localStorage === 'undefined') return [];
   const data = localStorage.getItem('issues');
@@ -16,25 +16,28 @@ function saveToStorage(issues) {
   }
 }
 
+// Store Creation
 function createIssuesStore() {
   const { subscribe, set, update } = writable(loadFromStorage());
 
   return {
     subscribe,
+
     add: (issue) =>
-    update((all) => {
-      const newIssue = { ...issue, x: issue.x || 100, y: issue.y || 100 };
-      const newList = [...all, newIssue];
-      saveToStorage(newList);
-      return newList;
-    }),
-  
+      update((all) => {
+        const newIssue = { ...issue, x: issue.x || 100, y: issue.y || 100 };
+        const newList = [...all, newIssue];
+        saveToStorage(newList);
+        return newList;
+      }),
+
     remove: (id) =>
       update((all) => {
         const newList = all.filter((i) => i.id !== id);
         saveToStorage(newList);
         return newList;
       }),
+
     move: (id, newLane) =>
       update((all) => {
         const updated = all.map((i) => {
@@ -49,10 +52,20 @@ function createIssuesStore() {
         saveToStorage(updated);
         return updated;
       }),
+
+    // ✅ NEW: update position of issue on drag
+    updatePosition: (id, x, y) =>
+      update((all) => {
+        const updated = all.map((i) => (i.id === id ? { ...i, x, y } : i));
+        saveToStorage(updated);
+        return updated;
+      }),
+
     reset: () => set([])
   };
 }
 
+// Desktop Notification for "Done"
 function showNotification(message) {
   if (typeof window !== 'undefined' && 'Notification' in window) {
     if (Notification.permission === 'granted') {
