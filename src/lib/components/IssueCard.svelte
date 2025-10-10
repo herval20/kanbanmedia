@@ -19,14 +19,14 @@
       const end = endDate.toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
   
       const icsContent = `BEGIN:VCALENDAR
-  VERSION:2.0
-  BEGIN:VEVENT
-  SUMMARY:${issue.title}
-  DESCRIPTION:${issue.description}
-  DTSTART:${start}
-  DTEND:${end}
-  END:VEVENT
-  END:VCALENDAR`;
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:${issue.title}
+DESCRIPTION:${issue.description}
+DTSTART:${start}
+DTEND:${end}
+END:VEVENT
+END:VCALENDAR`;
   
       const blob = new Blob([icsContent], { type: 'text/calendar' });
       const url = URL.createObjectURL(blob);
@@ -36,39 +36,57 @@
       a.click();
       URL.revokeObjectURL(url);
     }
-  </script>
-  
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="bg-white rounded-xl shadow p-4 mb-3 border-l-4"
-       class:border-l-pink-400={overdue}
-       class:border-l-purple-500={!overdue}
-       draggable="true"
-       on:dragstart={(e) => e.dataTransfer.setData('text', issue.id)}>
-  
-    <div class="flex justify-between items-start">
-      <h3 class="font-bold text-lg">{issue.title}</h3>
-      <button class="text-red-500 font-bold" on:click={deleteIssue}>✖</button>
-    </div>
-  
-    {#if issue.description}
-      <p class="text-gray-700 mt-1">{issue.description}</p>
-    {/if}
-  
-    <div class="flex justify-between items-center mt-3 text-sm text-gray-600">
-      <span>Due: {dueFormatted}</span>
-      <span>SP: {issue.storyPoints}</span>
-      <span class="px-2 py-0.5 rounded-full text-white bg-purple-500">
-        {issue.priority}
-      </span>
-    </div>
-  
-    {#if overdue}
-      <div class="mt-2 text-pink-500 font-semibold">⚠ Overdue!</div>
-    {/if}
-  
-    <!-- ICS Export Button for individual issue -->
-    <div class="flex justify-end mt-2">
-      <button class="text-purple-600 text-sm hover:underline" on:click={exportICS}>Export ICS</button>
-    </div>
+
+    // ===== New function: Web Share API per issue =====
+    async function shareIssue() {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: issue.title,
+            text: `${issue.description}\nDue: ${dueFormatted}`,
+            url: window.location.href
+          });
+          console.log('Issue shared successfully');
+        } catch (err) {
+          console.error('Error sharing:', err);
+        }
+      } else {
+        alert('Web Share API not supported in this browser.');
+      }
+    }
+</script>
+
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="bg-white rounded-xl shadow p-4 mb-3 border-l-4"
+     class:border-l-pink-400={overdue}
+     class:border-l-purple-500={!overdue}
+     draggable="true"
+     on:dragstart={(e) => e.dataTransfer.setData('text', issue.id)}>
+
+  <div class="flex justify-between items-start">
+    <h3 class="font-bold text-lg">{issue.title}</h3>
+    <button class="text-red-500 font-bold" on:click={deleteIssue}>✖</button>
   </div>
-  
+
+  {#if issue.description}
+    <p class="text-gray-700 mt-1">{issue.description}</p>
+  {/if}
+
+  <div class="flex justify-between items-center mt-3 text-sm text-gray-600">
+    <span>Due: {dueFormatted}</span>
+    <span>SP: {issue.storyPoints}</span>
+    <span class="px-2 py-0.5 rounded-full text-white bg-purple-500">
+      {issue.priority}
+    </span>
+  </div>
+
+  {#if overdue}
+    <div class="mt-2 text-pink-500 font-semibold">⚠ Overdue!</div>
+  {/if}
+
+  <!-- ICS & Share Buttons for individual issue -->
+  <div class="flex justify-end mt-2 gap-2">
+    <button class="text-purple-600 text-sm hover:underline" on:click={exportICS}>Export ICS</button>
+    <button class="text-purple-600 text-sm hover:underline" on:click={shareIssue}>Share</button>
+  </div>
+</div>
