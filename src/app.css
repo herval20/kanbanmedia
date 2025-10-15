@@ -1,13 +1,4 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
-
-/* global.css */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #fdf8ff;
-    color: #333;
-    margin: 0;
-    padding: 1rem;
-  }
-  
+ 

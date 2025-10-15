@@ -1,10 +1,10 @@
 <script>
 	import '../app.css';
-	import favicon from '$lib/assets/favicon.svg';
   </script>
   
   <svelte:head>
-	<link rel="icon" href={favicon} />
+	<!-- Prevent browser from requesting favicon.ico -->
+	<link rel="icon" href="data:," />
   </svelte:head>
   
   <slot />
