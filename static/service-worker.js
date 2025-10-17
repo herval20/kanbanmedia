@@ -8,6 +8,6 @@ self.addEventListener('install', (event) => {
   });
   
   self.addEventListener('fetch', (event) => {
-    // Optional: du kannst später hier Caching hinzufügen
+    // Optional: add caching later if you want offline mode
   });
   
