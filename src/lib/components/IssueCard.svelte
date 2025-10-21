@@ -64,7 +64,8 @@ END:VCALENDAR`;
   </div>
 
   <div class="flex justify-end mt-2 gap-2">
-    <button on:click={exportICS} class="text-xs bg-blue-500 text-white px-2 py-1 rounded">ICS</button>
-    <button on:click={shareIssue} class="text-xs bg-green-500 text-white px-2 py-1 rounded">Share</button>
+    <!-- Neutral-colored buttons -->
+    <button on:click={exportICS} class="text-xs bg-gray-400 text-white px-2 py-1 rounded hover:bg-gray-500">ICS</button>
+    <button on:click={shareIssue} class="text-xs bg-gray-400 text-white px-2 py-1 rounded hover:bg-gray-500">Share</button>
   </div>
 </div>
