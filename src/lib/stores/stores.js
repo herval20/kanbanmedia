@@ -1,71 +1,61 @@
 import { writable } from 'svelte/store';
 
-// Lanes
-export const lanes = ['Do', 'Doing', 'Done', 'Archiv'];
+function createIssues() {
+  const stored = typeof localStorage !== 'undefined' ? localStorage.getItem('kanban_issues') : null;
+  const { subscribe, set, update } = writable(stored ? JSON.parse(stored) : []);
 
-// LocalStorage helpers
-function loadFromStorage() {
-  if (typeof localStorage === 'undefined') return [];
-  const data = localStorage.getItem('issues');
-  return data ? JSON.parse(data) : [];
-}
+  let history = [];
+  let future = [];
 
-function saveToStorage(issues) {
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem('issues', JSON.stringify(issues));
+  function saveHistory(issues) {
+    history.push(JSON.stringify(issues));
+    if (history.length > 50) history.shift();
+    future = [];
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('kanban_issues', JSON.stringify(issues));
+    }
   }
-}
-
-// Issues Store
-function createIssuesStore() {
-  const { subscribe, set, update } = writable(loadFromStorage());
 
   return {
     subscribe,
-    add: (issue) =>
-      update((all) => {
-        const newList = [...all, issue];
-        saveToStorage(newList);
-        return newList;
-      }),
-    remove: (id) =>
-      update((all) => {
-        const newList = all.filter((i) => i.id !== id);
-        saveToStorage(newList);
-        return newList;
-      }),
-    move: (id, newLane) =>
-      update((all) => {
-        const updated = all.map((i) => {
-          if (i.id === id) {
-            // ✅ Notification for Done
-            if (newLane === 'Done' && i.lane !== 'Done') {
-              showNotification(`Issue "${i.title}" has been completed ✅`);
-            }
-            return { ...i, lane: newLane };
-          }
-          return i;
-        });
-        saveToStorage(updated);
-        return updated;
-      }),
-    reset: () => set([])
+    set: (val) => { saveHistory(val); set(val); },
+    add: (issue) => update((issues) => {
+      const newIssues = [...issues, issue];
+      saveHistory(newIssues);
+      return newIssues;
+    }),
+    remove: (id) => update((issues) => {
+      const newIssues = issues.filter(i => i.id !== id);
+      saveHistory(newIssues);
+      return newIssues;
+    }),
+    move: (id, lane) => update((issues) => {
+      const newIssues = issues.map(i => i.id === id ? { ...i, lane } : i);
+      saveHistory(newIssues);
+      return newIssues;
+    }),
+    undo: () => update((issues) => {
+      if (!history.length) return issues;
+      future.push(JSON.stringify(issues));
+      const prev = JSON.parse(history.pop());
+      if (typeof localStorage !== 'undefined') localStorage.setItem('kanban_issues', JSON.stringify(prev));
+      return prev;
+    }),
+    redo: () => update((issues) => {
+      if (!future.length) return issues;
+      history.push(JSON.stringify(issues));
+      const next = JSON.parse(future.pop());
+      if (typeof localStorage !== 'undefined') localStorage.setItem('kanban_issues', JSON.stringify(next));
+      return next;
+    }),
+    reset: () => {
+      if (typeof localStorage !== 'undefined') localStorage.removeItem('kanban_issues');
+      set([]);
+      history = [];
+      future = [];
+    }
   };
 }
 
-// Notifications
-function showNotification(message) {
-  if (typeof window !== 'undefined' && 'Notification' in window) {
-    if (Notification.permission === 'granted') {
-      new Notification('Kanban Board', { body: message });
-    } else if (Notification.permission !== 'denied') {
-      Notification.requestPermission().then((permission) => {
-        if (permission === 'granted') {
-          new Notification('Kanban Board', { body: message });
-        }
-      });
-    }
-  }
-}
-
-export const issues = createIssuesStore();
+export const issues = createIssues();
+export const lanes = ['Do', 'Doing', 'Done', 'Archiv'];
