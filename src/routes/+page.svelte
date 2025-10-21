@@ -30,14 +30,14 @@
         if (Notification.permission === 'granted') {
           new Notification('Issue Completed', {
             body: `${draggedIssue.title} moved to Done.`,
-            icon: '/favicon.ico'
+        
           });
         } else if (Notification.permission !== 'denied') {
           Notification.requestPermission().then(permission => {
             if (permission === 'granted') {
               new Notification('Issue Completed', {
                 body: `${draggedIssue.title} moved to Done.`,
-                icon: '/favicon.ico'
+             
               });
             }
           });
@@ -102,9 +102,20 @@
   <!-- Lanes -->
   <div style="display:flex; gap:1.5rem; overflow-x:auto; height:80vh;">
     {#each lanes as lane}
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div on:dragover={onDragOver} on:drop={() => onDrop(lane)}
-           style="flex:1; min-width:250px; background:{darkMode ? (lane === 'Archive' ? '#2f2f2f' : '#1c1c1c') : (lane === 'Archive' ? '#dcdcdc' : '#fff')} ; padding:1.5rem; border-radius:1rem; box-shadow:0 8px 16px rgba(0,0,0,0.15); transition: all 0.3s;">
-        <h2 style="text-align:center; font-size:1.25rem; font-weight:600; color:{darkMode ? '#fff' : '#111'};">{lane}</h2>
+           style="
+             flex:1; min-width:250px; 
+             background:{darkMode 
+                         ? (lane === 'Archive' ? '#444' : '#1c1c1c') 
+                         : (lane === 'Archive' ? '#d3d3d3' : '#fff')} ;
+             padding:1.5rem; border-radius:1rem; 
+             box-shadow:0 8px 16px rgba(0,0,0,0.15); 
+             transition: all 0.3s;
+           ">
+        <h2 style="text-align:center; font-size:1.25rem; font-weight:600; color:{darkMode ? '#fff' : '#111'};">
+          {lane}
+        </h2>
         <p style="text-align:center; margin-bottom:1rem; font-weight:bold;">
           Total SP: {$issues.filter(i => i.lane === lane).reduce((sum,i) => sum + Number(i.storyPoints||0),0)}
         </p>
@@ -118,7 +129,7 @@
           <div draggable="true" 
                on:dragstart={(e) => { e.dataTransfer.setData('text', String(issue.id)); onDragStart(issue); }}
                style="margin-bottom:1rem;">
-            <IssueCard {issue} {darkMode}/>
+            <IssueCard {issue} {darkMode} archive={lane === 'Archive'}/>
           </div>
         {/each}
       </div>

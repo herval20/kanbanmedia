@@ -6,7 +6,7 @@
   export let darkMode = false; // receive from parent/page
 
   $: laneIssues = $issues.filter(i => i.lane === name);
-  $: totalSP = laneIssues.reduce((sum, i) => sum + Number(i.storyPoints), 0);
+  $: totalSP = laneIssues.reduce((sum, i) => sum + Number(i.storyPoints || 0), 0);
 
   function allowDrop(event) {
     event.preventDefault();
@@ -23,8 +23,12 @@
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
   class="rounded p-3 min-h-[200px] flex flex-col focus:outline-none focus:ring-2 transition-colors duration-500"
-  class:bg-purple-50={!darkMode}
-  class:bg-gray-900={darkMode}
+  style="
+    background: {darkMode
+                ? (name === 'Archiv' ? '#555' : '#1c1c1c')
+                : (name === 'Archiv' ? '#d3d3d3' : '#fff')};
+    color: {darkMode ? '#fff' : '#111'};
+  "
   role="region"
   tabindex="0"
   aria-label={`Lane ${name}, contains ${laneIssues.length} issues, total SP ${totalSP}`}
@@ -33,15 +37,13 @@
 >
   <h2
     class="font-bold mb-1 text-center"
-    class:text-purple-700={!darkMode}
-    class:text-purple-300={darkMode}
+    style="color: {darkMode ? '#fff' : '#111'};"
   >
     {name}
   </h2>
   <p
     class="text-sm text-center mb-2"
-    class:text-gray-600={!darkMode}
-    class:text-gray-400={darkMode}
+    style="color: {darkMode ? '#ccc' : '#555'};"
   >
     Total SP: {totalSP}
   </p>
@@ -51,6 +53,7 @@
     <div
       draggable="true"
       on:dragstart={(e) => e.dataTransfer.setData('text', String(issue.id))}
+      class="mb-2"
     >
       <IssueCard {issue} {darkMode} />
     </div>
